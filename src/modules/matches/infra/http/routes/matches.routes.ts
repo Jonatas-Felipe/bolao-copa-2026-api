@@ -11,7 +11,7 @@ matchesRouter.get('/api/matches', (req, res, next) => {
   matchesController.index(req, res).catch(next)
 })
 
-matchesRouter.post('/api/matches/sync', (req, res, next) => {
+matchesRouter.get('/api/matches/sync', (req, res, next) => {
   matchesController.sync(req, res).catch(next)
 })
 
