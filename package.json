@@ -1,0 +1,37 @@
+{
+  "name": "bolao-copa-2026-api",
+  "version": "1.0.0",
+  "packageManager": "yarn@4.6.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -p tsconfig.json && tsc-alias -p tsconfig.json",
+    "start": "yarn node dist/shared/infra/http/server.js",
+    "typeorm": "typeorm-ts-node-esm"
+  },
+  "dependencies": {
+    "axios": "^1.7.2",
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "jsonwebtoken": "^9.0.2",
+    "node-cron": "^3.0.3",
+    "pg": "^8.12.0",
+    "reflect-metadata": "^0.2.2",
+    "typeorm": "^0.3.20"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.6",
+    "@types/jsonwebtoken": "^9.0.6",
+    "@types/node": "^20.14.0",
+    "@types/node-cron": "^3.0.11",
+    "tsc-alias": "^1.8.17",
+    "typescript": "^5.4.5",
+    "vite": "^4.5.3",
+    "vite-plugin-node": "^3.1.0",
+    "vite-tsconfig-paths": "^4.3.2"
+  }
+}
