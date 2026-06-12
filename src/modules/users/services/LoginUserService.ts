@@ -33,7 +33,7 @@ export class LoginUserService {
 
     const token = jwt.sign({}, authConfig.jwt.secret, {
       subject: user.id,
-      expiresIn: authConfig.jwt.expiresIn,
+      expiresIn: authConfig.jwt.expiresIn as any,
     })
 
     // Salva o token no banco
