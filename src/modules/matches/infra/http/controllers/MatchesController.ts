@@ -17,12 +17,7 @@ export class MatchesController {
     const listMatches = new ListMatchesService()
     const result = await listMatches.execute({ page, limit, type, group, finished })
 
-    const matches = result.matches.map((m) => ({
-      ...m,
-      date: new Date(new Date(m.date).getTime() - 3 * 60 * 60 * 1000).toISOString(),
-    }))
-
-    return res.json({ ...result, matches })
+    return res.json(result)
   }
 
   async sync(req: Request, res: Response): Promise<Response> {
