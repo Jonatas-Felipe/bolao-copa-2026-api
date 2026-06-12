@@ -1,17 +1,51 @@
 import { AppDataSource } from '@shared/infra/typeorm/data-source.js'
 import { Match } from '@modules/matches/infra/typeorm/entities/Match.js'
-import { worldCupApi, GameResponse, TeamResponse } from '@config/worldCupApi.js'
+import { worldCupApi, GameResponse, TeamResponse, StadiumResponse } from '@config/worldCupApi.js'
+
+// UTC offsets during June/July (DST) for World Cup 2026 host cities
+const cityUtcOffset: Record<string, number> = {
+  'Miami (Miami Gardens)': -4,
+  'New York/New Jersey (East Rutherford)': -4,
+  'Philadelphia': -4,
+  'Boston (Foxborough)': -4,
+  'Atlanta': -4,
+  'Toronto': -4,
+  'Houston': -5,
+  'Dallas (Arlington, Texas)': -5,
+  'Kansas City': -5,
+  'Mexico City': -6,
+  'Guadalajara (Zapopan)': -6,
+  'Monterrey (Guadalupe)': -6,
+  'Seattle': -7,
+  'San Francisco Bay Area (Santa Clara)': -7,
+  'Los Angeles (Inglewood)': -7,
+  'Vancouver': -7,
+}
+
+function localDateToUtc(dateStr: string, cityName: string | undefined): Date {
+  // Parse "MM/DD/YYYY HH:mm"
+  const [datePart, timePart] = dateStr.split(' ')
+  const [month, day, year] = datePart.split('/')
+  const offset = cityName ? (cityUtcOffset[cityName] ?? -5) : -5
+  // Build ISO string with offset
+  const sign = offset <= 0 ? '-' : '+'
+  const absOffset = Math.abs(offset)
+  const offsetStr = `${sign}${String(absOffset).padStart(2, '0')}:00`
+  return new Date(`${year}-${month}-${day}T${timePart}:00${offsetStr}`)
+}
 
 export class SyncMatchesService {
   async execute(): Promise<{ created: number; updated: number }> {
     const matchRepo = AppDataSource.getRepository(Match)
 
-    const [gamesRes, teamsRes] = await Promise.all([
+    const [gamesRes, teamsRes, stadiumsRes] = await Promise.all([
       worldCupApi.get<{ games: GameResponse[] }>('/get/games'),
       worldCupApi.get<{ teams: TeamResponse[] }>('/get/teams'),
+      worldCupApi.get<{ stadiums: StadiumResponse[] }>('/get/stadiums'),
     ])
 
     const teamsMap = new Map(teamsRes.data.teams.map((t) => [t.id, t]))
+    const stadiumsMap = new Map(stadiumsRes.data.stadiums.map((s) => [s.id, s]))
 
     let created = 0
     let updated = 0
@@ -19,11 +53,9 @@ export class SyncMatchesService {
     for (const game of gamesRes.data.games) {
       const homeTeam = teamsMap.get(game.home_team_id)
       const awayTeam = teamsMap.get(game.away_team_id)
+      const stadium = stadiumsMap.get(game.stadium_id)
 
-      // Parse date: "MM/DD/YYYY HH:mm"
-      const [datePart, timePart] = game.local_date.split(' ')
-      const [month, day, year] = datePart.split('/')
-      const date = new Date(`${year}-${month}-${day}T${timePart}:00`)
+      const date = localDateToUtc(game.local_date, stadium?.city_en)
 
       const matchData: Partial<Match> = {
         id: game.id,
@@ -39,6 +71,7 @@ export class SyncMatchesService {
         finished: game.finished === 'TRUE',
         timeElapsed: game.time_elapsed || 'notstarted',
         type: game.type,
+        venue: stadium ? `${stadium.name_en}, ${stadium.city_en}, ${stadium.country_en}` : null,
       }
 
       const existing = await matchRepo.findOneBy({ id: game.id })

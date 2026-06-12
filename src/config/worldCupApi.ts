@@ -2,6 +2,7 @@ import axios from 'axios'
 
 export const worldCupApi = axios.create({
   baseURL: 'https://worldcup26.ir',
+  timeout: 30000,
 })
 
 export interface GameResponse {
@@ -33,6 +34,13 @@ export interface TeamResponse {
   fifa_code: string
   iso2: string
   groups: string
+}
+
+export interface StadiumResponse {
+  id: string
+  name_en: string
+  city_en: string
+  country_en: string
 }
 
 export interface GroupTeam {

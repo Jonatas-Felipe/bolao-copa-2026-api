@@ -44,4 +44,7 @@ export class Match {
 
   @Column({ type: 'varchar' })
   type: string
+
+  @Column({ type: 'varchar', nullable: true })
+  venue: string | null
 }
