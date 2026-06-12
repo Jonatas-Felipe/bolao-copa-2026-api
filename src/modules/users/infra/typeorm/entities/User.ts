@@ -4,8 +4,8 @@ import {
   Column,
   OneToMany,
   CreateDateColumn,
+  type Relation,
 } from 'typeorm'
-import { Guess } from '@modules/guesses/infra/typeorm/entities/Guess.js'
 
 @Entity('users')
 export class User {
@@ -21,8 +21,8 @@ export class User {
   @Column({ type: 'int', default: 0 })
   points: number
 
-  @OneToMany(() => Guess, (guess) => guess.user)
-  guesses: Guess[]
+  @OneToMany('Guess', 'user')
+  guesses: Relation<import('@modules/guesses/infra/typeorm/entities/Guess.js').Guess[]>
 
   @CreateDateColumn()
   createdAt: Date

@@ -16,7 +16,7 @@ export const AppDataSource = new DataSource({
   
   // Como fallback, se NODE_ENV não estiver setado, forçamos true para garantir a criação 
   // no ambiente local (lembre-se de remover ou garantir que em prod NODE_ENV seja 'production')
-  synchronize: process.env.NODE_ENV === 'development' || process.env.NODE_ENV === undefined,
+  synchronize: true,
   logging: process.env.NODE_ENV === 'development' || process.env.NODE_ENV === undefined,
   
   entities: [User, Match, Guess, Token],

@@ -5,8 +5,8 @@ import {
   ManyToOne,
   JoinColumn,
   Unique,
+  type Relation,
 } from 'typeorm'
-import { User } from '@modules/users/infra/typeorm/entities/User.js'
 
 @Entity('guesses')
 @Unique(['userId', 'matchId'])
@@ -26,7 +26,7 @@ export class Guess {
   @Column({ type: 'varchar' })
   matchId: string
 
-  @ManyToOne(() => User, (user) => user.guesses)
+  @ManyToOne('User', 'guesses')
   @JoinColumn({ name: 'userId' })
-  user: User
+  user: Relation<import('@modules/users/infra/typeorm/entities/User.js').User>
 }
