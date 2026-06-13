@@ -14,7 +14,7 @@ interface GuessWithUserAndPoints {
 }
 
 export class ListMatchGuessesService {
-  async execute(matchId: string, currentUserId: string): Promise<GuessWithUserAndPoints[]> {
+  async execute(matchId: string): Promise<GuessWithUserAndPoints[]> {
     const matchRepo = AppDataSource.getRepository(Match)
     const guessRepo = AppDataSource.getRepository(Guess)
     const userRepo = AppDataSource.getRepository(User)
@@ -35,7 +35,6 @@ export class ListMatchGuessesService {
     const usersMap = new Map(users.map((u) => [u.id, u.name]))
 
     const result: GuessWithUserAndPoints[] = guesses
-      .filter((g) => g.userId !== currentUserId)
       .map((guess) => {
         let points = 0
         if (match.finished && match.homeScore !== null && match.awayScore !== null) {

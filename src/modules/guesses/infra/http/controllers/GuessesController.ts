@@ -25,10 +25,9 @@ export class GuessesController {
 
   async listByMatch(req: Request, res: Response): Promise<Response> {
     const matchId = req.params.matchId as string
-    const userId = req.user.id
 
     const listMatchGuesses = new ListMatchGuessesService()
-    const guesses = await listMatchGuesses.execute(matchId, userId)
+    const guesses = await listMatchGuesses.execute(matchId)
 
     return res.json(guesses)
   }
