@@ -140,7 +140,7 @@ GET /api/matches?page=1&limit=20&type=group&group=A&finished=false
 
 **Campos importantes:**
 - `id` — ID do jogo (usar no palpite como `matchId`)
-- `homeTeamName` / `awayTeamName` — nomes dos times em inglês
+- `homeTeamName` / `awayTeamName` — nomes dos times em **português** (ex: "Brasil", "Alemanha")
 - `homeFlag` / `awayFlag` — URL da bandeira (imagem PNG 80px)
 - `homeScore` / `awayScore` — placar (string ou `null` se não começou)
 - `finished` — `true` ou `false` (boolean)
@@ -281,7 +281,48 @@ GET /api/guesses/me
 
 ---
 
-### 9. Ranking
+### 9. Palpites dos Participantes por Jogo
+
+```
+GET /api/guesses/match/:matchId
+```
+
+**Headers:** `Authorization: Bearer <token>`
+
+**Resposta 200:**
+```json
+[
+  {
+    "id": "uuid-do-palpite",
+    "userName": "Ana",
+    "homeScore": 2,
+    "awayScore": 1,
+    "points": 7
+  },
+  {
+    "id": "uuid-do-palpite",
+    "userName": "Carlos",
+    "homeScore": 1,
+    "awayScore": 0,
+    "points": 1
+  }
+]
+```
+
+**Campos:**
+- `userName` — nome do participante
+- `homeScore` / `awayScore` — palpite do participante
+- `points` — pontos que o participante fez neste palpite (0 se o jogo não acabou)
+
+**Erros:**
+- `403` — Os palpites só ficam visíveis após o início do jogo
+- `404` — Jogo não encontrado
+
+**Regra:** Retorna apenas os palpites dos **outros** participantes (exclui o palpite do usuário autenticado). Ordenado por pontos decrescente. Útil para exibir um modal quando o jogo está rolando ou já passou.
+
+---
+
+### 10. Ranking
 
 ```
 GET /api/ranking
@@ -302,7 +343,7 @@ Ordenado por pontos decrescente. Pontos são calculados comparando palpites com 
 
 ---
 
-### 10. Sincronizar Jogos
+### 11. Sincronizar Jogos
 
 ```
 POST /api/matches/sync
@@ -317,7 +358,7 @@ Puxa todos os jogos da API worldcup26.ir e atualiza o banco local.
 { "created": 104, "updated": 0 }
 ```
 
-> **Nota:** Também roda automaticamente via cron a cada 5 minutos.
+> **Nota:** Também roda automaticamente via cron a cada 5 minutos (junto com o recálculo de pontuação).
 
 ---
 
@@ -325,9 +366,10 @@ Puxa todos os jogos da API worldcup26.ir e atualiza o banco local.
 
 | Acerto | Pontos |
 |--------|--------|
-| Placar exato (ex: apostou 2x1 e deu 2x1) | **5** |
-| Acertou o vencedor e o saldo de gols (ex: apostou 2x1, deu 3x2) | **3** |
-| Acertou o empate com saldo de gol errado (ex: apostou 1x1, deu 2x2) | **2** |
+| Placar exato (ex: apostou 2x1 e deu 2x1) | **7** |
+| Acertou o vencedor e o saldo de gols (ex: apostou 2x1, deu 3x2) | **5** |
+| Acertou o empate com saldo de gol errado (ex: apostou 1x1, deu 2x2) | **3** |
+| Acertou o placar do perdedor (ex: apostou 2x1, deu 3x1) | **2** |
 | Acertou apenas quem venceu a partida (ex: apostou 3x0, deu 1x0) | **1** |
 | Errou tudo | **0** |
 
@@ -336,13 +378,14 @@ Puxa todos os jogos da API worldcup26.ir e atualiza o banco local.
 ## Fluxo de Uso Sugerido para o Frontend
 
 1. **Tela de Login/Registro** — Usuário informa nome + PIN (4 dígitos). Salvar o `token` retornado (localStorage ou secure storage).
-2. **Tela de Jogos** — `GET /api/matches?page=1&limit=20` → mostrar lista paginada. Bandeiras já vêm como URL no campo `homeFlag`/`awayFlag`. Para cada jogo com `finished === false`, permitir input de placar.
+2. **Tela de Jogos** — `GET /api/matches?page=1&limit=20` → mostrar lista paginada. Bandeiras já vêm como URL no campo `homeFlag`/`awayFlag`. Nomes dos times vêm em **português**. Para cada jogo com `finished === false`, permitir input de placar.
 3. **Filtros** — Usar query params: `?type=group&group=A` para fase de grupos do grupo A, `?finished=true` para jogos encerrados.
 4. **Enviar Palpite** — `POST /api/guesses` ao confirmar. Desabilitar input se o jogo começa em menos de 30min.
 5. **Tela Meus Palpites** — `GET /api/guesses/me` → palpites do usuário. Cruzar `matchId` com dados de matches para exibir info do jogo.
-6. **Tela Ranking** — `GET /api/ranking` → tabela com posição, nome e pontos.
-7. **Tela Grupos** — `GET /api/groups` + `GET /api/teams` → montar tabela de classificação por grupo.
-8. **Sync inicial** — Na primeira vez, chamar `POST /api/matches/sync` para popular o banco. Depois o cron mantém atualizado.
+6. **Modal Palpites dos Outros** — `GET /api/guesses/match/:matchId` → exibir palpites dos outros participantes quando o jogo está rolando ou já acabou. Mostra nome, palpite e pontuação.
+7. **Tela Ranking** — `GET /api/ranking` → tabela com posição, nome e pontos.
+8. **Tela Grupos** — `GET /api/groups` + `GET /api/teams` → montar tabela de classificação por grupo.
+9. **Sync inicial** — Na primeira vez, chamar `POST /api/matches/sync` para popular o banco. Depois o cron mantém atualizado.
 
 ---
 
@@ -369,9 +412,10 @@ Todas as respostas de erro seguem o formato:
 ## Notas Técnicas
 
 - **Fonte dos dados:** API aberta [worldcup26.ir](https://worldcup26.ir) — sem necessidade de API key
-- **Sync automático:** Os jogos são sincronizados para o banco local a cada 5 minutos via cron. Respostas de `/api/matches` vêm do banco (rápido + paginação)
+- **Sync automático:** Os jogos são sincronizados para o banco local a cada 5 minutos via cron. A pontuação também é recalculada no mesmo intervalo. Respostas de `/api/matches` vêm do banco (rápido + paginação)
 - **Base URL de produção:** configurar via variável de ambiente no app
 - **Token:** JWT com expiração de 6 meses — armazenar de forma segura
 - **Datas:** formato ISO 8601 (UTC) — converter para timezone local no frontend
 - **Bandeiras:** campos `homeFlag`/`awayFlag` retornam URL de imagem PNG (ex: `https://flagcdn.com/w80/br.png`)
 - **IDs:** os `matchId` são strings numéricas (ex: `"1"`, `"32"`)
+- **Nomes dos times:** retornados em português (ex: "Brasil", "Alemanha", "França"). A tradução é feita no sync.

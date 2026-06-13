@@ -11,9 +11,9 @@ interface MatchScore {
 export function calculatePoints(guess: GuessScore, match: MatchScore): number {
   if (match.homeScore === null || match.awayScore === null) return 0
 
-  // Placar exato = 5 pontos
+  // 7 pontos: Placar exato (ex: apostou 2x1 e deu 2x1)
   if (guess.homeScore === match.homeScore && guess.awayScore === match.awayScore) {
-    return 5
+    return 7
   }
 
   const guessDiff = guess.homeScore - guess.awayScore
@@ -24,15 +24,21 @@ export function calculatePoints(guess: GuessScore, match: MatchScore): number {
   const matchWinner = matchDiff > 0 ? 'home' : matchDiff < 0 ? 'away' : 'draw'
 
   if (guessWinner === matchWinner) {
-    // Acertou vencedor + saldo de gols = 3 pontos
+    // 5 pontos: Acertou o vencedor e o saldo de gols (ex: apostou 2x1, deu 3x2)
     if (guessDiff === matchDiff) {
+      return 5
+    }
+    // 3 pontos: Acertou o empate com saldo de gol errado (ex: apostou 1x1, deu 2x2)
+    if (matchWinner === 'draw') {
       return 3
     }
-    // Acertou empate mas com gols errados = 2 pontos
-    if (matchWinner === 'draw') {
+    // 2 pontos: Acertou o placar do perdedor (ex: apostou 2x1, deu 3x1)
+    const loserScoreMatch = matchWinner === 'home' ? match.awayScore : match.homeScore
+    const loserScoreGuess = matchWinner === 'home' ? guess.awayScore : guess.homeScore
+    if (loserScoreGuess === loserScoreMatch) {
       return 2
     }
-    // Só acertou o vencedor = 1 ponto
+    // 1 ponto: Acertou apenas quem venceu a partida
     return 1
   }
 

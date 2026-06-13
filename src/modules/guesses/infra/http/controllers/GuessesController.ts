@@ -1,6 +1,7 @@
 import { Request, Response } from 'express'
 import { CreateGuessService } from '@modules/guesses/services/CreateGuessService.js'
 import { ListUserGuessesService } from '@modules/guesses/services/ListUserGuessesService.js'
+import { ListMatchGuessesService } from '@modules/guesses/services/ListMatchGuessesService.js'
 
 export class GuessesController {
   async create(req: Request, res: Response): Promise<Response> {
@@ -18,6 +19,16 @@ export class GuessesController {
 
     const listGuesses = new ListUserGuessesService()
     const guesses = await listGuesses.execute(userId)
+
+    return res.json(guesses)
+  }
+
+  async listByMatch(req: Request, res: Response): Promise<Response> {
+    const matchId = req.params.matchId as string
+    const userId = req.user.id
+
+    const listMatchGuesses = new ListMatchGuessesService()
+    const guesses = await listMatchGuesses.execute(matchId, userId)
 
     return res.json(guesses)
   }

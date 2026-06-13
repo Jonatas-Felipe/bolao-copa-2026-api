@@ -1,6 +1,7 @@
 import { AppDataSource } from '@shared/infra/typeorm/data-source.js'
 import { Match } from '@modules/matches/infra/typeorm/entities/Match.js'
 import { worldCupApi, GameResponse, TeamResponse, StadiumResponse } from '@config/worldCupApi.js'
+import { getTeamNamePtBr } from '@modules/matches/utils/countryFlags.js'
 
 // UTC offsets during June/July (DST) for World Cup 2026 host cities
 const cityUtcOffset: Record<string, number> = {
@@ -59,8 +60,8 @@ export class SyncMatchesService {
 
       const matchData: Partial<Match> = {
         id: game.id,
-        homeTeamName: game.home_team_name_en || null,
-        awayTeamName: game.away_team_name_en || null,
+        homeTeamName: getTeamNamePtBr(game.home_team_name_en) || null,
+        awayTeamName: getTeamNamePtBr(game.away_team_name_en) || null,
         homeFlag: homeTeam?.flag || null,
         awayFlag: awayTeam?.flag || null,
         homeScore: game.home_score === 'null' ? null : game.home_score,

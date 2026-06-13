@@ -6,7 +6,7 @@ export function startCronJobs(): void {
   const syncService = new SyncMatchesService()
   const recalcService = new RecalculateAllPointsService()
 
-  // Sync de jogos a cada 5 minutos
+  // Sync de jogos e recálculo de pontuação a cada 5 minutos
   cron.schedule('*/5 * * * *', async () => {
     try {
       const result = await syncService.execute()
@@ -16,10 +16,7 @@ export function startCronJobs(): void {
     } catch (err) {
       console.error('[CRON] Erro na sincronização:', err)
     }
-  })
 
-  // Recalcula pontuação a cada hora
-  cron.schedule('0 * * * *', async () => {
     try {
       const count = await recalcService.execute()
       console.log(`[CRON] Pontuação recalculada para ${count} usuários`)
@@ -28,5 +25,5 @@ export function startCronJobs(): void {
     }
   })
 
-  console.log('[CRON] Jobs agendados: sync (5min), pontuação (1h)')
+  console.log('[CRON] Jobs agendados: sync + pontuação (5min)')
 }
