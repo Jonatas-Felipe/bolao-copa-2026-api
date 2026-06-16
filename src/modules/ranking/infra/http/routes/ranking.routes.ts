@@ -11,4 +11,8 @@ rankingRouter.get('/api/ranking', (req, res, next) => {
   rankingController.index(req, res).catch(next)
 })
 
+rankingRouter.post('/api/ranking/recalculate', (req, res, next) => {
+  rankingController.recalculate(req, res).catch(next)
+})
+
 export { rankingRouter }

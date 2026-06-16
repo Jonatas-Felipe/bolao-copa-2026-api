@@ -362,16 +362,40 @@ Puxa todos os jogos da API worldcup26.ir e atualiza o banco local.
 
 ---
 
+### 12. Recalcular Pontuação
+
+```
+POST /api/ranking/recalculate
+```
+
+**Sem autenticação necessária.**
+
+Recalcula a pontuação de todos os usuários do zero, com base nos palpites e resultados atuais no banco. Útil para forçar a atualização após correção de regras.
+
+**Resposta 200:**
+```json
+{ "recalculated": 12 }
+```
+
+> **Nota:** O recálculo também roda automaticamente via cron a cada 5 minutos.
+
+---
+
 ## Sistema de Pontuação
 
 | Acerto | Pontos |
 |--------|--------|
 | Placar exato (ex: apostou 2x1 e deu 2x1) | **7** |
 | Acertou o vencedor e o saldo de gols (ex: apostou 2x1, deu 3x2) | **5** |
+| Acertou o placar do vencedor (ex: apostou 2x1, deu 2x0) | **4** |
 | Acertou o empate com saldo de gol errado (ex: apostou 1x1, deu 2x2) | **3** |
 | Acertou o placar do perdedor (ex: apostou 2x1, deu 3x1) | **2** |
 | Acertou apenas quem venceu a partida (ex: apostou 3x0, deu 1x0) | **1** |
 | Errou tudo | **0** |
+
+**Observações importantes:**
+- A regra de 4 pontos (placar do vencedor) e 2 pontos (placar do perdedor) só valem se o palpiteiro acertou quem venceu. Se palpitou empate e teve vencedor, ou se palpitou o time errado como vencedor, não pontua.
+- Empates que não são exatos sempre dão 3 pontos (não há "saldo de gols" a considerar em empates, pois o saldo é sempre 0).
 
 ---
 
