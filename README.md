@@ -42,8 +42,11 @@ yarn start
 
 | Acerto | Pontos |
 |--------|--------|
-| Placar exato | 5 |
-| Empate (não exato) | 3 |
-| Vencedor + 1 gol certo | 2 |
-| Apenas vencedor | 1 |
+| Placar exato | 7 |
+| Vencedor + saldo de gols | 6 |
+| Placar do vencedor | 5 |
+| Empate (não exato) | 4 |
+| Placar do perdedor | 3 |
+| Apenas vencedor | 2 |
+| Palpite em empate (quando há vencedor) | 1 |
 | Errou tudo | 0 |

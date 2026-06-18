@@ -386,16 +386,18 @@ Recalcula a pontuação de todos os usuários do zero, com base nos palpites e r
 | Acerto | Pontos |
 |--------|--------|
 | Placar exato (ex: apostou 2x1 e deu 2x1) | **7** |
-| Acertou o vencedor e o saldo de gols (ex: apostou 2x1, deu 3x2) | **5** |
-| Acertou o placar do vencedor (ex: apostou 2x1, deu 2x0) | **4** |
-| Acertou o empate com saldo de gol errado (ex: apostou 1x1, deu 2x2) | **3** |
-| Acertou o placar do perdedor (ex: apostou 2x1, deu 3x1) | **2** |
-| Acertou apenas quem venceu a partida (ex: apostou 3x0, deu 1x0) | **1** |
+| Acertou o vencedor e o saldo de gols (ex: apostou 2x1, deu 3x2) | **6** |
+| Acertou o placar do vencedor (ex: apostou 2x1, deu 2x0) | **5** |
+| Acertou o empate com saldo errado (ex: apostou 1x1, deu 2x2) | **4** |
+| Acertou o placar do perdedor (ex: apostou 2x1, deu 3x1) | **3** |
+| Acertou apenas quem venceu a partida (ex: apostou 3x0, deu 1x0) | **2** |
+| Colocou empate no palpite | **1** |
 | Errou tudo | **0** |
 
 **Observações importantes:**
-- A regra de 4 pontos (placar do vencedor) e 2 pontos (placar do perdedor) só valem se o palpiteiro acertou quem venceu. Se palpitou empate e teve vencedor, ou se palpitou o time errado como vencedor, não pontua.
-- Empates que não são exatos sempre dão 3 pontos (não há "saldo de gols" a considerar em empates, pois o saldo é sempre 0).
+- A regra de 5 pontos (placar do vencedor) e 3 pontos (placar do perdedor) só valem se o palpiteiro acertou quem venceu.
+- Empates que não são exatos sempre dão 4 pontos (não há "saldo de gols" a considerar em empates, pois o saldo é sempre 0).
+- Se o palpite for empate e o jogo tiver vencedor, a pontuação é 1 ponto.
 
 ---
 
