@@ -11,7 +11,13 @@ export class RecalculateAllPointsService {
     const matchRepo = AppDataSource.getRepository(Match)
 
     const finishedMatches = await matchRepo.find({ where: { finished: true } })
-    const matchesMap = new Map(finishedMatches.map((m) => [m.id, m]))
+    // Também incluir jogos com placar preenchido que por algum motivo não foram marcados como finished
+    const matchesWithScores = await matchRepo
+      .createQueryBuilder('m')
+      .where('m.homeScore IS NOT NULL AND m.awayScore IS NOT NULL')
+      .getMany()
+    const allScoredMatches = [...finishedMatches, ...matchesWithScores]
+    const matchesMap = new Map(allScoredMatches.map((m) => [m.id, m]))
 
     const users = await userRepo.find({ select: ['id'] })
     const allGuesses = await guessRepo.find()
@@ -26,9 +32,13 @@ export class RecalculateAllPointsService {
         const match = matchesMap.get(guess.matchId)
         if (!match || match.homeScore === null || match.awayScore === null) continue
 
+        const homeScore = Number(match.homeScore)
+        const awayScore = Number(match.awayScore)
+        if (isNaN(homeScore) || isNaN(awayScore)) continue
+
         points += calculatePoints(
           { homeScore: guess.homeScore, awayScore: guess.awayScore },
-          { homeScore: parseInt(match.homeScore), awayScore: parseInt(match.awayScore) },
+          { homeScore, awayScore },
         )
       }
 

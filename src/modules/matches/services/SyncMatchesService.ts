@@ -58,18 +58,24 @@ export class SyncMatchesService {
 
       const date = localDateToUtc(game.local_date, stadium?.city_en)
 
+      const homeScore = game.home_score === 'null' || !game.home_score ? null : game.home_score
+      const awayScore = game.away_score === 'null' || !game.away_score ? null : game.away_score
+      const isFinished = game.finished?.toUpperCase() === 'TRUE' ||
+        game.time_elapsed === 'finished' ||
+        (homeScore !== null && awayScore !== null && game.time_elapsed !== 'notstarted')
+
       const matchData: Partial<Match> = {
         id: game.id,
         homeTeamName: getTeamNamePtBr(game.home_team_name_en) || null,
         awayTeamName: getTeamNamePtBr(game.away_team_name_en) || null,
         homeFlag: homeTeam?.flag || null,
         awayFlag: awayTeam?.flag || null,
-        homeScore: game.home_score === 'null' ? null : game.home_score,
-        awayScore: game.away_score === 'null' ? null : game.away_score,
+        homeScore: homeScore,
+        awayScore: awayScore,
         group: game.group || null,
         matchday: game.matchday,
         date,
-        finished: game.finished === 'TRUE',
+        finished: isFinished,
         timeElapsed: game.time_elapsed || 'notstarted',
         type: game.type,
         venue: stadium ? `${stadium.name_en}, ${stadium.city_en}, ${stadium.country_en}` : null,
