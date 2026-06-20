@@ -1,11 +1,16 @@
 import 'reflect-metadata'
 import dotenv from 'dotenv'
 dotenv.config()
+import { createServer } from 'http'
 import { AppDataSource } from '@shared/infra/typeorm/data-source.js'
 import { app } from './app.js'
+import { initSocket } from './socket.js'
 import { startCronJobs } from '@shared/infra/cron/jobs.js'
 
 const PORT = Number(process.env.PORT) || 3001
+
+const httpServer = createServer(app)
+initSocket(httpServer)
 
 AppDataSource.initialize()
   .then(() => {
@@ -13,7 +18,7 @@ AppDataSource.initialize()
 
     startCronJobs()
 
-    app.listen(PORT, '0.0.0.0', () => {
+    httpServer.listen(PORT, '0.0.0.0', () => {
       console.log(`Server running on port ${PORT}`)
     })
   })

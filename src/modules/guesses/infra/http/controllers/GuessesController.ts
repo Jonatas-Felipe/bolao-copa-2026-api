@@ -2,6 +2,7 @@ import { Request, Response } from 'express'
 import { CreateGuessService } from '@modules/guesses/services/CreateGuessService.js'
 import { ListUserGuessesService } from '@modules/guesses/services/ListUserGuessesService.js'
 import { ListMatchGuessesService } from '@modules/guesses/services/ListMatchGuessesService.js'
+import { getIO } from '@shared/infra/http/socket.js'
 
 export class GuessesController {
   async create(req: Request, res: Response): Promise<Response> {
@@ -10,6 +11,8 @@ export class GuessesController {
 
     const createGuess = new CreateGuessService()
     const guess = await createGuess.execute({ userId, matchId, homeScore, awayScore })
+
+    getIO().emit('guess:created', { matchId, userId })
 
     return res.status(201).json(guess)
   }

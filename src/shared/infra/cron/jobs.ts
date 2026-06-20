@@ -1,6 +1,7 @@
 import cron from 'node-cron'
 import { SyncMatchesService } from '@modules/matches/services/SyncMatchesService.js'
 import { RecalculateAllPointsService } from '@modules/ranking/services/RecalculateAllPointsService.js'
+import { getIO } from '@shared/infra/http/socket.js'
 
 export function startCronJobs(): void {
   const syncService = new SyncMatchesService()
@@ -12,6 +13,7 @@ export function startCronJobs(): void {
       const result = await syncService.execute()
       if (result.created > 0 || result.updated > 0) {
         console.log(`[CRON] Sync: ${result.created} criados, ${result.updated} atualizados`)
+        getIO().emit('matches:updated', result)
       }
     } catch (err) {
       console.error('[CRON] Erro na sincronização:', err)
@@ -20,6 +22,7 @@ export function startCronJobs(): void {
     try {
       const count = await recalcService.execute()
       console.log(`[CRON] Pontuação recalculada para ${count} usuários`)
+      getIO().emit('ranking:updated', { recalculated: count })
     } catch (err) {
       console.error('[CRON] Erro no recálculo de pontos:', err)
     }

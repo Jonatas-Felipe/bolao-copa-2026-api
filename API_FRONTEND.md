@@ -445,3 +445,55 @@ Todas as respostas de erro seguem o formato:
 - **Bandeiras:** campos `homeFlag`/`awayFlag` retornam URL de imagem PNG (ex: `https://flagcdn.com/w80/br.png`)
 - **IDs:** os `matchId` são strings numéricas (ex: `"1"`, `"32"`)
 - **Nomes dos times:** retornados em português (ex: "Brasil", "Alemanha", "França"). A tradução é feita no sync.
+
+---
+
+## Socket.IO — Atualizações em Tempo Real
+
+O servidor expõe um endpoint Socket.IO na mesma porta da API (`http://localhost:3002`).
+
+### Conexão no frontend
+
+```javascript
+import { io } from 'socket.io-client'
+
+const socket = io('http://localhost:3002')
+
+socket.on('connect', () => {
+  console.log('Conectado ao servidor realtime')
+})
+```
+
+### Eventos emitidos pelo servidor
+
+| Evento | Payload | Quando |
+|--------|---------|--------|
+| `matches:updated` | `{ created: number, updated: number }` | Jogos foram sincronizados (cron a cada 5min) |
+| `ranking:updated` | `{ recalculated: number }` | Pontuação recalculada (cron ou rota manual) |
+| `guess:created` | `{ matchId: string, userId: string }` | Um palpite foi criado ou atualizado |
+
+### Uso sugerido
+
+```javascript
+// Atualizar lista de jogos quando houver mudanças
+socket.on('matches:updated', () => {
+  fetchMatches() // re-busca GET /api/matches
+})
+
+// Atualizar ranking em tempo real
+socket.on('ranking:updated', () => {
+  fetchRanking() // re-busca GET /api/ranking
+})
+
+// Atualizar contagem de palpites de um jogo
+socket.on('guess:created', ({ matchId }) => {
+  // se o usuário estiver visualizando este jogo, atualizar palpites
+  fetchMatchGuesses(matchId)
+})
+```
+
+### Notas
+- **Não requer autenticação** — a conexão Socket.IO é aberta (apenas recebe eventos)
+- **CORS:** aceita qualquer origem (`*`)
+- O frontend **não precisa enviar** nenhum evento — apenas escuta
+- Usar os eventos como trigger para re-fetch dos dados via REST (evita manter estado duplicado)
