@@ -11,13 +11,15 @@ export class RecalculateAllPointsService {
     const matchRepo = AppDataSource.getRepository(Match)
 
     const finishedMatches = await matchRepo.find({ where: { finished: true } })
-    // Também incluir jogos com placar preenchido que por algum motivo não foram marcados como finished
-    const matchesWithScores = await matchRepo
+    // Fallback: jogos com placar + timeElapsed 'finished' que não foram flagados corretamente
+    const missedFinished = await matchRepo
       .createQueryBuilder('m')
       .where('m.homeScore IS NOT NULL AND m.awayScore IS NOT NULL')
+      .andWhere('m.finished = false')
+      .andWhere("m.timeElapsed = 'finished'")
       .getMany()
-    const allScoredMatches = [...finishedMatches, ...matchesWithScores]
-    const matchesMap = new Map(allScoredMatches.map((m) => [m.id, m]))
+    const allFinished = [...finishedMatches, ...missedFinished]
+    const matchesMap = new Map(allFinished.map((m) => [m.id, m]))
 
     const users = await userRepo.find({ select: ['id'] })
     const allGuesses = await guessRepo.find()
