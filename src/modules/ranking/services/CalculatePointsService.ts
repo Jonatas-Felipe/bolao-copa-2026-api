@@ -11,9 +11,9 @@ interface MatchScore {
 export function calculatePoints(guess: GuessScore, match: MatchScore): number {
   if (match.homeScore === null || match.awayScore === null) return 0
 
-  // 7 pontos: Placar exato (ex: apostou 2x1 e deu 2x1)
+  // 25 pontos: Placar exato (ex: apostou 2x1 e deu 2x1)
   if (guess.homeScore === match.homeScore && guess.awayScore === match.awayScore) {
-    return 7
+    return 25
   }
 
   const guessDiff = guess.homeScore - guess.awayScore
@@ -24,33 +24,33 @@ export function calculatePoints(guess: GuessScore, match: MatchScore): number {
   const matchWinner = matchDiff > 0 ? 'home' : matchDiff < 0 ? 'away' : 'draw'
 
   if (guessWinner === matchWinner) {
-    // 4 pontos: Acertou o empate com saldo errado (ex: apostou 1x1, deu 2x2)
+    // 11 pontos: Acertou o empate com saldo errado (ex: apostou 1x1, deu 2x2)
     if (matchWinner === 'draw') {
-      return 4
+      return 11
     }
-    // 6 pontos: Acertou o vencedor e o saldo de gols (ex: apostou 2x1, deu 3x2)
-    if (guessDiff === matchDiff) {
-      return 6
-    }
-    // 5 pontos: Acertou o placar do vencedor (ex: apostou 2x1, deu 2x0)
+    // 18 pontos: Acertou o placar do vencedor (ex: apostou 2x1, deu 2x0)
     const winnerScoreGuess = matchWinner === 'home' ? guess.homeScore : guess.awayScore
     const winnerScoreMatch = matchWinner === 'home' ? match.homeScore : match.awayScore
     if (winnerScoreGuess === winnerScoreMatch) {
-      return 5
+      return 18
     }
-    // 3 pontos: Acertou o placar do perdedor (ex: apostou 2x1, deu 3x1)
+    // 15 pontos: Acertou o vencedor e o saldo de gols (ex: apostou 2x1, deu 3x2)
+    if (guessDiff === matchDiff) {
+      return 15
+    }
+    // 12 pontos: Acertou o placar do perdedor (ex: apostou 2x1, deu 3x1)
     const loserScoreMatch = matchWinner === 'home' ? match.awayScore : match.homeScore
     const loserScoreGuess = matchWinner === 'home' ? guess.awayScore : guess.homeScore
     if (loserScoreGuess === loserScoreMatch) {
-      return 3
+      return 12
     }
-    // 2 pontos: Acertou apenas quem venceu a partida
-    return 2
+    // 10 pontos: Acertou apenas quem venceu a partida
+    return 10
   }
 
-  // 1 ponto: Colocou empate no palpite
+  // 4 pontos: Colocou empate no palpite
   if (guessWinner === 'draw') {
-    return 1
+    return 4
   }
 
   return 0

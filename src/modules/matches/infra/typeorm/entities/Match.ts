@@ -47,4 +47,7 @@ export class Match {
 
   @Column({ type: 'varchar', nullable: true })
   venue: string | null
+
+  @Column({ type: 'int', default: 10 })
+  weight: number
 }

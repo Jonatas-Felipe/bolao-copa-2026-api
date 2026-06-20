@@ -35,6 +35,15 @@ function localDateToUtc(dateStr: string, cityName: string | undefined): Date {
   return new Date(`${year}-${month}-${day}T${timePart}:00${offsetStr}`)
 }
 
+// Data de início da Copa 2026 (11 de junho)
+const TOURNAMENT_START = new Date('2026-06-11T00:00:00Z')
+
+function calculateWeight(matchDate: Date): number {
+  const diffMs = matchDate.getTime() - TOURNAMENT_START.getTime()
+  const daysSinceStart = Math.max(0, Math.floor(diffMs / (24 * 60 * 60 * 1000)))
+  return 10 + daysSinceStart
+}
+
 export class SyncMatchesService {
   async execute(): Promise<{ created: number; updated: number }> {
     const matchRepo = AppDataSource.getRepository(Match)
@@ -61,8 +70,7 @@ export class SyncMatchesService {
       const homeScore = game.home_score === 'null' || !game.home_score ? null : game.home_score
       const awayScore = game.away_score === 'null' || !game.away_score ? null : game.away_score
       const isFinished = game.finished?.toUpperCase() === 'TRUE' ||
-        game.time_elapsed === 'finished' ||
-        (homeScore !== null && awayScore !== null && game.time_elapsed !== 'notstarted')
+        game.time_elapsed === 'finished'
 
       const matchData: Partial<Match> = {
         id: game.id,
@@ -79,6 +87,7 @@ export class SyncMatchesService {
         timeElapsed: game.time_elapsed || 'notstarted',
         type: game.type,
         venue: stadium ? `${stadium.name_en}, ${stadium.city_en}, ${stadium.country_en}` : null,
+        weight: calculateWeight(date),
       }
 
       const existing = await matchRepo.findOneBy({ id: game.id })

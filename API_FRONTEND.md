@@ -383,21 +383,39 @@ Recalcula a pontuação de todos os usuários do zero, com base nos palpites e r
 
 ## Sistema de Pontuação
 
+### Pontos base
+
 | Acerto | Pontos |
 |--------|--------|
-| Placar exato (ex: apostou 2x1 e deu 2x1) | **7** |
-| Acertou o vencedor e o saldo de gols (ex: apostou 2x1, deu 3x2) | **6** |
-| Acertou o placar do vencedor (ex: apostou 2x1, deu 2x0) | **5** |
-| Acertou o empate com saldo errado (ex: apostou 1x1, deu 2x2) | **4** |
-| Acertou o placar do perdedor (ex: apostou 2x1, deu 3x1) | **3** |
-| Acertou apenas quem venceu a partida (ex: apostou 3x0, deu 1x0) | **2** |
-| Colocou empate no palpite | **1** |
+| Placar exato (ex: apostou 2x1 e deu 2x1) | **25** |
+| Acertou o placar do vencedor (ex: apostou 2x1, deu 2x0) | **18** |
+| Acertou o vencedor e o saldo de gols (ex: apostou 2x1, deu 3x2) | **15** |
+| Acertou o placar do perdedor (ex: apostou 2x1, deu 3x1) | **12** |
+| Acertou o empate com saldo errado (ex: apostou 1x1, deu 2x2) | **11** |
+| Acertou apenas quem venceu a partida | **10** |
+| Colocou empate no palpite | **4** |
 | Errou tudo | **0** |
 
+### Peso do jogo (multiplicador)
+
+Cada jogo possui um campo `weight` que funciona como multiplicador. O peso começa em **10** no primeiro dia da Copa (11/06) e sobe **+1 a cada dia**.
+
+**Fórmula:** `pontos_finais = pontos_base × weight`
+
+| Data do jogo | Peso (`weight`) | Placar exato | Só vencedor |
+|-------------|-----------------|-------------|-------------|
+| 11/06 (dia 1) | 10 | 250 | 100 |
+| 20/06 (dia 10) | 19 | 475 | 190 |
+| 30/06 (dia 20) | 29 | 725 | 290 |
+| 19/07 (final) | 48 | 1200 | 480 |
+
+O campo `weight` é retornado em cada objeto de jogo na resposta de `GET /api/matches`.
+
 **Observações importantes:**
-- A regra de 5 pontos (placar do vencedor) e 3 pontos (placar do perdedor) só valem se o palpiteiro acertou quem venceu.
-- Empates que não são exatos sempre dão 4 pontos (não há "saldo de gols" a considerar em empates, pois o saldo é sempre 0).
-- Se o palpite for empate e o jogo tiver vencedor, a pontuação é 1 ponto.
+- A regra de 18 pontos (placar do vencedor) e 12 pontos (placar do perdedor) só valem se o palpiteiro acertou quem venceu.
+- Empates que não são exatos sempre dão 11 pontos base (não há "saldo de gols" a considerar em empates, pois o saldo é sempre 0).
+- Se o palpite for empate e o jogo tiver vencedor, a pontuação base é 4 pontos.
+- Os pontos exibidos em `GET /api/guesses/match/:matchId` e no ranking já vêm multiplicados pelo peso.
 
 ---
 

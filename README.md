@@ -40,13 +40,15 @@ yarn start
 
 ## Sistema de Pontos
 
-| Acerto | Pontos |
-|--------|--------|
-| Placar exato | 7 |
-| Vencedor + saldo de gols | 6 |
-| Placar do vencedor | 5 |
-| Empate (não exato) | 4 |
-| Placar do perdedor | 3 |
-| Apenas vencedor | 2 |
-| Palpite em empate (quando há vencedor) | 1 |
+| Acerto | Pontos base |
+|--------|-------------|
+| Placar exato | 25 |
+| Placar do vencedor | 18 |
+| Vencedor + saldo de gols | 15 |
+| Placar do perdedor | 12 |
+| Empate (não exato) | 11 |
+| Apenas vencedor | 10 |
+| Palpite em empate | 4 |
 | Errou tudo | 0 |
+
+**Peso (multiplicador):** cada jogo tem um `weight` = 10 + dias desde o início da Copa. Pontos finais = pontos_base × weight.

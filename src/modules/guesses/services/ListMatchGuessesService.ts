@@ -38,10 +38,11 @@ export class ListMatchGuessesService {
       .map((guess) => {
         let points = 0
         if (match.finished && match.homeScore !== null && match.awayScore !== null) {
-          points = calculatePoints(
+          const basePoints = calculatePoints(
             { homeScore: guess.homeScore, awayScore: guess.awayScore },
-            { homeScore: parseInt(match.homeScore), awayScore: parseInt(match.awayScore) },
+            { homeScore: Number(match.homeScore), awayScore: Number(match.awayScore) },
           )
+          points = basePoints * (match.weight || 10)
         }
 
         return {

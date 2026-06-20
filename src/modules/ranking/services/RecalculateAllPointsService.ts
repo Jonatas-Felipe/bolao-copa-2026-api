@@ -38,10 +38,11 @@ export class RecalculateAllPointsService {
         const awayScore = Number(match.awayScore)
         if (isNaN(homeScore) || isNaN(awayScore)) continue
 
-        points += calculatePoints(
+        const basePoints = calculatePoints(
           { homeScore: guess.homeScore, awayScore: guess.awayScore },
           { homeScore, awayScore },
         )
+        points += basePoints * (match.weight || 10)
       }
 
       await userRepo.update(user.id, { points })
