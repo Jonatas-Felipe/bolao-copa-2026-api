@@ -9,22 +9,22 @@ export class MatchIdToInteger1719000000000 implements MigrationInterface {
     const isAlreadyInt = matchIdCol.length > 0 && matchIdCol[0].data_type === 'integer'
 
     if (!isAlreadyInt) {
-      // Remover FK de guesses para matches se existir
+      // Remover todas as FK de guesses que referenciam matches
       const fks = await queryRunner.query(
         `SELECT constraint_name FROM information_schema.table_constraints WHERE table_name = 'guesses' AND constraint_type = 'FOREIGN KEY'`
       )
       for (const fk of fks) {
         if (fk.constraint_name.toLowerCase().includes('match')) {
-          await queryRunner.query(`ALTER TABLE "guesses" DROP CONSTRAINT "${fk.constraint_name}"`)
+          await queryRunner.query(`ALTER TABLE "guesses" DROP CONSTRAINT IF EXISTS "${fk.constraint_name}"`)
         }
       }
 
-      // Remover unique constraint de guesses que envolve matchId
+      // Remover unique constraints de guesses
       const uqs = await queryRunner.query(
         `SELECT constraint_name FROM information_schema.table_constraints WHERE table_name = 'guesses' AND constraint_type = 'UNIQUE'`
       )
       for (const uq of uqs) {
-        await queryRunner.query(`ALTER TABLE "guesses" DROP CONSTRAINT "${uq.constraint_name}"`)
+        await queryRunner.query(`ALTER TABLE "guesses" DROP CONSTRAINT IF EXISTS "${uq.constraint_name}"`)
       }
 
       // Converter matchId em guesses para integer
@@ -37,19 +37,20 @@ export class MatchIdToInteger1719000000000 implements MigrationInterface {
 
       // Converter id em matches para integer
       await queryRunner.query(`ALTER TABLE "matches" ALTER COLUMN "id" TYPE integer USING "id"::integer`)
-
-      // Recriar unique constraint
-      await queryRunner.query(`ALTER TABLE "guesses" ADD CONSTRAINT "UQ_guesses_userId_matchId" UNIQUE ("userId", "matchId")`)
-
-      // Criar FK
-      await queryRunner.query(`ALTER TABLE "guesses" ADD CONSTRAINT "FK_guesses_matchId" FOREIGN KEY ("matchId") REFERENCES "matches"("id") ON DELETE CASCADE`)
     }
+
+    // Garantir unique constraint (idempotente)
+    const hasUq = await queryRunner.query(
+      `SELECT 1 FROM information_schema.table_constraints WHERE table_name = 'guesses' AND constraint_type = 'UNIQUE' AND constraint_name = 'UQ_guesses_userId_matchId'`
+    )
+    if (hasUq.length === 0) {
+      await queryRunner.query(`ALTER TABLE "guesses" ADD CONSTRAINT "UQ_guesses_userId_matchId" UNIQUE ("userId", "matchId")`)
+    }
+
+    // NÃO criar FK aqui — o synchronize do TypeORM cuida disso via @ManyToOne na entidade
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    // Remover FK
-    await queryRunner.query(`ALTER TABLE "guesses" DROP CONSTRAINT IF EXISTS "FK_guesses_matchId"`)
-    // Reverter para varchar
     await queryRunner.query(`ALTER TABLE "guesses" ALTER COLUMN "matchId" TYPE varchar USING "matchId"::varchar`)
     await queryRunner.query(`ALTER TABLE "matches" ALTER COLUMN "id" TYPE varchar USING "id"::varchar`)
   }
