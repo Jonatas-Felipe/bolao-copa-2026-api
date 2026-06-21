@@ -10,7 +10,7 @@ export class GuessesController {
     const userId = req.user.id
 
     const createGuess = new CreateGuessService()
-    const guess = await createGuess.execute({ userId, matchId, homeScore, awayScore })
+    const guess = await createGuess.execute({ userId, matchId: Number(matchId), homeScore, awayScore })
 
     getIO().emit('guess:created', { matchId, userId })
 
@@ -27,7 +27,7 @@ export class GuessesController {
   }
 
   async listByMatch(req: Request, res: Response): Promise<Response> {
-    const matchId = req.params.matchId as string
+    const matchId = Number(req.params.matchId)
 
     const listMatchGuesses = new ListMatchGuessesService()
     const guesses = await listMatchGuesses.execute(matchId)

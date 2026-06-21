@@ -5,7 +5,7 @@ import { AppError } from '@shared/errors/AppError.js'
 
 interface Request {
   userId: string
-  matchId: string
+  matchId: number
   homeScore: number
   awayScore: number
 }

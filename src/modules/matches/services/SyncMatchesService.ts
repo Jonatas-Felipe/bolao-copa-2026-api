@@ -44,23 +44,29 @@ function calculateWeight(matchDate: Date): number {
   return 10 + daysSinceStart
 }
 
+function delay(ms: number): Promise<void> {
+  return new Promise((r) => setTimeout(r, ms))
+}
+
 export class SyncMatchesService {
   async execute(): Promise<{ created: number; updated: number }> {
     const matchRepo = AppDataSource.getRepository(Match)
 
-    const [gamesRes, teamsRes, stadiumsRes] = await Promise.all([
-      worldCupApi.get<{ games: GameResponse[] }>('/get/games'),
-      worldCupApi.get<{ teams: TeamResponse[] }>('/get/teams'),
-      worldCupApi.get<{ stadiums: StadiumResponse[] }>('/get/stadiums'),
-    ])
+    // Chamadas sequenciais com delay para não sobrecarregar a API
+    const gamesRes = await worldCupApi.get<{ games: GameResponse[] }>('/get/games')
+    await delay(500)
+    const teamsRes = await worldCupApi.get<{ teams: TeamResponse[] }>('/get/teams')
+    await delay(500)
+    const stadiumsRes = await worldCupApi.get<{ stadiums: StadiumResponse[] }>('/get/stadiums')
 
+    const games = gamesRes.data.games
     const teamsMap = new Map(teamsRes.data.teams.map((t) => [t.id, t]))
     const stadiumsMap = new Map(stadiumsRes.data.stadiums.map((s) => [s.id, s]))
 
     let created = 0
     let updated = 0
 
-    for (const game of gamesRes.data.games) {
+    for (const game of games) {
       const homeTeam = teamsMap.get(game.home_team_id)
       const awayTeam = teamsMap.get(game.away_team_id)
       const stadium = stadiumsMap.get(game.stadium_id)
@@ -72,8 +78,10 @@ export class SyncMatchesService {
       const isFinished = game.finished?.toUpperCase() === 'TRUE' ||
         game.time_elapsed === 'finished'
 
+      const gameId = Number(game.id)
+
       const matchData: Partial<Match> = {
-        id: game.id,
+        id: gameId,
         homeTeamName: getTeamNamePtBr(game.home_team_name_en) || null,
         awayTeamName: getTeamNamePtBr(game.away_team_name_en) || null,
         homeFlag: homeTeam?.flag || null,
@@ -90,13 +98,25 @@ export class SyncMatchesService {
         weight: calculateWeight(date),
       }
 
-      const existing = await matchRepo.findOneBy({ id: game.id })
+      const existing = await matchRepo.findOneBy({ id: gameId })
 
       if (!existing) {
         await matchRepo.save(matchRepo.create(matchData))
         created++
       } else {
-        await matchRepo.update(game.id, matchData)
+        // Nunca regredir finished de true para false (proteção contra dados inconsistentes da API)
+        if (existing.finished && !isFinished) {
+          matchData.finished = true
+          matchData.timeElapsed = 'finished'
+        }
+        // Nunca apagar placar que já existia
+        if (existing.homeScore !== null && homeScore === null) {
+          matchData.homeScore = existing.homeScore
+        }
+        if (existing.awayScore !== null && awayScore === null) {
+          matchData.awayScore = existing.awayScore
+        }
+        await matchRepo.update(gameId, matchData)
         updated++
       }
     }

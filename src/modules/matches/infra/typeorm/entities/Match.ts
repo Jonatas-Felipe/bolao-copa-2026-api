@@ -6,8 +6,8 @@ import {
 
 @Entity('matches')
 export class Match {
-  @PrimaryColumn({ type: 'varchar' })
-  id: string
+  @PrimaryColumn({ type: 'int' })
+  id: number
 
   @Column({ type: 'varchar', nullable: true })
   homeTeamName: string | null

@@ -14,7 +14,7 @@ interface GuessWithUserAndPoints {
 }
 
 export class ListMatchGuessesService {
-  async execute(matchId: string): Promise<GuessWithUserAndPoints[]> {
+  async execute(matchId: number): Promise<GuessWithUserAndPoints[]> {
     const matchRepo = AppDataSource.getRepository(Match)
     const guessRepo = AppDataSource.getRepository(Guess)
     const userRepo = AppDataSource.getRepository(User)

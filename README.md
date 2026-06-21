@@ -28,7 +28,7 @@ yarn start
 
 ### Matches (autenticado)
 - `GET /api/matches` — Lista jogos importados
-- `POST /api/matches/sync` — Trigger manual de sync com API-Football
+- `POST /api/matches/sync` — Trigger manual de sync com worldcup26.ir
 - `POST /api/matches/sync-live` — Sync de jogos ao vivo
 
 ### Guesses (autenticado)
